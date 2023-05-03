@@ -1,20 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/weather_data.dart';
 
-Future<Map<String, dynamic>> getCurrentWeather() async {
-  final response = await http.get(
-    Uri.parse('https://api.open-meteo.com/v1/forecast'),
-  );
+class WeatherApi {
+  static const baseUrl = "https://api.open-meteo.com/v1/forecast";
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    if (data is Map<String, dynamic>) {
-      final hourlyData = data['hourly'];
-      if (hourlyData is List && hourlyData.isNotEmpty) {
-        return Map<String, dynamic>.from(hourlyData[0]);
-      }
+  Future<WeatherData> fetchWeatherData(double latitude, double longitude) async {
+    final response = await http.get(Uri.parse(
+        "$baseUrl?latitude=$latitude&longitude=$longitude&current_weather=true"));
+
+    if (response.statusCode == 200) {
+      return WeatherData.fromJson(json.decode(response.body)['current_weather']);
+    } else {
+      throw Exception("Failed to load weather data");
     }
   }
-
-  throw Exception('Failed to load current weather data');
 }
