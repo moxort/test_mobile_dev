@@ -62,10 +62,10 @@ class WeatherScreen extends StatelessWidget {
                   SizedBox(height: 16),
                   Text(
                     '${weatherData.temperature.toStringAsFixed(1)}°C',
-                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '${weatherData.condition}',
+                    weatherData.conditionDescription,
                     style: TextStyle(fontSize: 20),
                   ),
                 ],
