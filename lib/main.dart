@@ -41,18 +41,33 @@ class WeatherScreen extends StatelessWidget {
             if (viewModel.weatherData == null) {
               return CircularProgressIndicator();
             } else {
+              final weatherData = viewModel.weatherData;
+              final cityName = "Tallinn"; // replace with actual city name
+              final latitude = 59.437; // replace with actual latitude
+              final longitude = 24.754; // replace with actual longitude
+              final now = DateTime.now();
+
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Temperature: ${viewModel.weatherData!.temperature}°C',
-                    style: TextStyle(fontSize: 24),
+                    '$cityName (${latitude.toStringAsFixed(3)}, ${longitude.toStringAsFixed(3)})',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    now.toString(),
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    '${weatherData.temperature.toStringAsFixed(1)}°C',
+                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'Condition: ${viewModel.weatherData!.conditionDescription}',
-                    style: TextStyle(fontSize: 24),
+                    '${weatherData.condition}',
+                    style: TextStyle(fontSize: 20),
                   ),
-
                 ],
               );
             }
@@ -62,6 +77,7 @@ class WeatherScreen extends StatelessWidget {
     );
   }
 }
+
 
 class WeatherViewModel extends ChangeNotifier {
   final WeatherApi _weatherApi = WeatherApi();
