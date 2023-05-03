@@ -52,12 +52,12 @@ class WeatherScreen extends StatelessWidget {
                 children: [
                   Text(
                     '$cityName (${latitude.toStringAsFixed(3)}, ${longitude.toStringAsFixed(3)})',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   Text(
                     now.toString(),
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 20),
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -66,7 +66,7 @@ class WeatherScreen extends StatelessWidget {
                   ),
                   Text(
                     weatherData.conditionDescription,
-                    style: TextStyle(fontSize: 20),
+                    style: TextStyle(fontSize: 30),
                   ),
                 ],
               );
