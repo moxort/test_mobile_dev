@@ -5,32 +5,62 @@ import 'package:test_mobile_dev/services/weather_api.dart';
 
 import 'models/weather_data.dart';
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: ChangeNotifierProvider<WeatherViewModel>(
         create: (context) => WeatherViewModel(),
-        child: WeatherScreen(),
+        child: const WeatherScreen(),
       ),
     );
   }
 }
 
-class WeatherScreen extends StatelessWidget {
+class WeatherScreen extends StatefulWidget {
+  const WeatherScreen({super.key});
+
+  @override
+  _WeatherScreenState createState() => _WeatherScreenState();
+}
+
+class _WeatherScreenState extends State<WeatherScreen> {
+  TextEditingController latitudeController = TextEditingController(text: "59.437");
+  TextEditingController longitudeController = TextEditingController(text: "24.754");
+
+  @override
+  void initState() {
+    super.initState();
+    var latitude = double.tryParse(latitudeController.text);
+    var longitude = double.tryParse(longitudeController.text);
+    if(latitude != null && longitude != null) {
+      Provider.of<WeatherViewModel>(context, listen: false).loadWeatherData(latitude, longitude);
+    } else {
+      print('Invalid coordinates');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Weather App'),
+        title: const Text('Weather App'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
-              Provider.of<WeatherViewModel>(context, listen: false).loadWeatherData();
+              var latitude = double.tryParse(latitudeController.text);
+              var longitude = double.tryParse(longitudeController.text);
+              if(latitude != null && longitude != null) {
+                Provider.of<WeatherViewModel>(context, listen: false).loadWeatherData(latitude, longitude);
+              } else {
+                print('Invalid coordinates');
+              }
             },
           ),
         ],
@@ -38,39 +68,53 @@ class WeatherScreen extends StatelessWidget {
       body: Center(
         child: Consumer<WeatherViewModel>(
           builder: (context, viewModel, child) {
-            if (viewModel.weatherData == null) {
-              return CircularProgressIndicator();
-            } else {
-              final weatherData = viewModel.weatherData;
-              final cityName = "Tallinn"; // replace with actual city name
-              final latitude = 59.437; // replace with actual latitude
-              final longitude = 24.754; // replace with actual longitude
-              final now = DateTime.now();
-
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '$cityName (${latitude.toStringAsFixed(3)}, ${longitude.toStringAsFixed(3)})',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0), // padding on left and right
+                  width: MediaQuery.of(context).size.width * 0.5, // setting width to 50% of screen width
+                  child: TextField(
+                    controller: latitudeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(hintText: 'Enter Latitude'),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    now.toString(),
-                    style: TextStyle(fontSize: 20),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0), // padding on left and right
+                  width: MediaQuery.of(context).size.width * 0.5, // setting width to 50% of screen width
+                  child: TextField(
+                    controller: longitudeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(hintText: 'Enter Longitude'),
                   ),
-                  SizedBox(height: 16),
-                  Text(
-                    '${weatherData.temperature.toStringAsFixed(1)}°C',
-                    style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    weatherData.conditionDescription,
-                    style: TextStyle(fontSize: 30),
-                  ),
-                ],
-              );
-            }
+                ),
+                if (viewModel.weatherData != null)
+                  ...[
+                    Text(
+                      '(${latitudeController.text}, ${longitudeController.text})',
+                      style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      DateTime.now().toString(),
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '${viewModel.weatherData!.temperature.toStringAsFixed(1)}°C',
+                      style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      viewModel.weatherData!.conditionDescription,
+                      style: const TextStyle(fontSize: 30),
+                    ),
+                  ]
+                else
+                  const CircularProgressIndicator(),
+              ],
+            );
           },
         ),
       ),
@@ -78,19 +122,16 @@ class WeatherScreen extends StatelessWidget {
   }
 }
 
-
 class WeatherViewModel extends ChangeNotifier {
   final WeatherApi _weatherApi = WeatherApi();
   WeatherData? _weatherData;
 
-  WeatherData get weatherData => _weatherData!;
-  WeatherViewModel() {
-    loadWeatherData();
-  }
+  WeatherData? get weatherData => _weatherData;
+  WeatherViewModel() {}
 
-  Future<void> loadWeatherData() async {
+  Future<void> loadWeatherData(double latitude, double longitude) async {
     try {
-      final data = await _weatherApi.fetchWeatherData(59.437, 24.754); // Tallinn's coordinates
+      final data = await _weatherApi.fetchWeatherData(latitude, longitude);
       _weatherData = data;
       notifyListeners();
     } catch (error) {
